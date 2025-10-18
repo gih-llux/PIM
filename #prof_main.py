@@ -1,0 +1,233 @@
+# prof_main.py
+import re
+import json
+import os
+import tkinter as tk
+from tkinter import ttk, messagebox
+
+# Configurações 
+PROFESSOR_DOMAINS = ["prof.unip.br", "docente.unip.br"]  
+USERS_FILE = "professores.json"  
+
+#Validações 
+def is_valid_password(pw: str) -> bool:
+    return bool(re.fullmatch(r"\d{5}", pw))  # exatamente 5 dígitos
+
+def is_valid_prof_email(email: str) -> bool:
+    # monta um regex do tipo  user@(prof.unip.br|docente.unip.br)
+    domains = "|".join(re.escape(d) for d in PROFESSOR_DOMAINS)
+    pattern = rf"^[A-Za-z0-9._%+-]+@(?:{domains})$"
+    return bool(re.fullmatch(pattern, email))
+
+# JSON 
+def load_users() -> dict:
+    if not os.path.exists(USERS_FILE):
+        return {}
+    try:
+        with open(USERS_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+def save_users(users: dict) -> None:
+    with open(USERS_FILE, "w", encoding="utf-8") as f:
+        json.dump(users, f, ensure_ascii=False, indent=2)
+
+#  UI 
+class App(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Sistema - Tela de Professor")
+        self.geometry("560x520")
+        self.minsize(520, 480)
+
+        self.users = load_users()  # chave: email, valor: {nome, email, senha, disciplina}
+
+        container = ttk.Frame(self, padding=16)
+        container.pack(fill="both", expand=True)
+
+        # Pergunta “Possui login?”
+        self.has_login = tk.StringVar(value="sim")
+        mode_box = ttk.LabelFrame(container, text="Tela de Professor")
+        mode_box.pack(fill="x", pady=(0, 12))
+
+        ttk.Label(mode_box, text="Possui login?").pack(side="left", padx=(8, 4), pady=8)
+        ttk.Radiobutton(mode_box, text="Sim", variable=self.has_login, value="sim",
+                        command=self._toggle_mode).pack(side="left", padx=4)
+        ttk.Radiobutton(mode_box, text="Não", variable=self.has_login, value="nao",
+                        command=self._toggle_mode).pack(side="left", padx=4)
+
+        # Telas
+        self.login_frame = self._build_login(container)
+        self.register_frame = self._build_register(container)
+
+        self._toggle_mode()
+
+    # Login 
+    def _build_login(self, parent):
+        frame = ttk.LabelFrame(parent, text="Login")
+        # Email
+        self.login_email = ttk.Entry(frame)
+        self._labeled_row(frame, "E-mail institucional (prof):", self.login_email).pack(fill="x", pady=6)
+        # Senha
+        self.login_pw = ttk.Entry(frame, show="*")
+        self._attach_digit_limiter(self.login_pw, max_len=5)
+        self._labeled_row(frame, "Senha (5 dígitos):", self.login_pw).pack(fill="x", pady=6)
+
+        btns = ttk.Frame(frame)
+        btns.pack(fill="x", pady=(8, 0))
+        ttk.Button(btns, text="Entrar", command=self._handle_login).pack(side="left")
+        ttk.Button(btns, text="Ir para Cadastro", command=lambda: self._switch_to_register()).pack(side="right")
+        return frame
+
+    def _handle_login(self):
+        email = self.login_email.get().strip()
+        pw = self.login_pw.get().strip()
+
+        self._clear_field_style([self.login_email, self.login_pw])
+        errors = []
+        if not is_valid_prof_email(email):
+            self._mark_invalid(self.login_email)
+            dlist = ", ".join(f"@{d}" for d in PROFESSOR_DOMAINS)
+            errors.append(f"E-mail deve ser institucional de professor ({dlist}).")
+        if not is_valid_password(pw):
+            self._mark_invalid(self.login_pw)
+            errors.append("Senha deve ter exatamente 5 dígitos numéricos.")
+
+        if errors:
+            messagebox.showerror("Erro no login", "\n".join(errors))
+            return
+
+        user = self.users.get(email.lower())
+        if not user or user.get("senha") != pw:
+            messagebox.showerror("Credenciais inválidas", "E-mail ou senha incorretos.")
+            return
+
+        messagebox.showinfo("Bem-vindo(a)!", f"Login concluído, Prof(a). {user.get('nome', 'Docente')} — Disciplina: {user.get('disciplina','')}")
+
+
+    # Cadastro 
+    def _build_register(self, parent):
+        frame = ttk.LabelFrame(parent, text="Cadastro")
+
+        self.reg_nome = ttk.Entry(frame)
+        self._labeled_row(frame, "Nome completo:", self.reg_nome).pack(fill="x", pady=6)
+
+        self.reg_email = ttk.Entry(frame)
+        self._labeled_row(frame, "E-mail institucional (prof):", self.reg_email).pack(fill="x", pady=6)
+
+        self.reg_pw = ttk.Entry(frame, show="*")
+        self._attach_digit_limiter(self.reg_pw, max_len=5)
+        self._labeled_row(frame, "Senha (5 dígitos):", self.reg_pw).pack(fill="x", pady=6)
+
+        self.reg_disc = ttk.Entry(frame)
+        self._labeled_row(frame, "Disciplina:", self.reg_disc).pack(fill="x", pady=6)
+
+        btns = ttk.Frame(frame)
+        btns.pack(fill="x", pady=(8, 0))
+        ttk.Button(btns, text="Validar & Salvar", command=self._handle_register).pack(side="left")
+        ttk.Button(btns, text="Voltar ao Login", command=lambda: self._switch_to_login()).pack(side="right")
+        return frame
+
+    def _handle_register(self):
+        nome = self.reg_nome.get().strip()
+        email = self.reg_email.get().strip()
+        pw = self.reg_pw.get().strip()
+        disc = self.reg_disc.get().strip()
+
+        fields = [self.reg_nome, self.reg_email, self.reg_pw, self.reg_disc]
+        self._clear_field_style(fields)
+
+        errors = []
+        if not nome:
+            self._mark_invalid(self.reg_nome)
+            errors.append("Informe o nome completo.")
+        if not is_valid_prof_email(email):
+            self._mark_invalid(self.reg_email)
+            dlist = ", ".join(f"@{d}" for d in PROFESSOR_DOMAINS)
+            errors.append(f"E-mail deve ser institucional de professor ({dlist}).")
+        if not is_valid_password(pw):
+            self._mark_invalid(self.reg_pw)
+            errors.append("Senha deve ter exatamente 5 dígitos numéricos.")
+        if not disc:
+            self._mark_invalid(self.reg_disc)
+            errors.append("Informe a disciplina.")
+
+        if errors:
+            messagebox.showerror("Corrija os campos", "\n".join(errors))
+            return
+
+        key = email.lower()
+        if key in self.users:
+            self._mark_invalid(self.reg_email)
+            messagebox.showerror("E-mail já cadastrado", "Este e-mail já existe. Faça login ou use outro e-mail.")
+            return
+
+        self.users[key] = {
+            "nome": nome,
+            "email": key,
+            "senha": pw,
+            "disciplina": disc
+        }
+        try:
+            save_users(self.users)
+            messagebox.showinfo("Sucesso", "Cadastro realizado! Você já pode fazer login.")
+            self._switch_to_login()
+        except Exception as e:
+            messagebox.showerror("Erro ao salvar", f"Não foi possível salvar os dados.\n{e}")
+
+    # ---- Helpers de UI ----
+    def _labeled_row(self, parent, label, widget):
+        row = ttk.Frame(parent)
+        ttk.Label(row, text=label).pack(anchor="w")
+        widget.pack(fill="x", padx=2, pady=(2, 0))
+        row.pack_propagate(False)
+        return row
+
+    def _switch_to_login(self):
+        self.has_login.set("sim")
+        self._toggle_mode()
+
+    def _switch_to_register(self):
+        self.has_login.set("nao")
+        self._toggle_mode()
+
+    def _toggle_mode(self):
+        self.login_frame.pack_forget()
+        self.register_frame.pack_forget()
+        if self.has_login.get() == "sim":
+            self.login_frame.pack(fill="x", padx=4, pady=4)
+        else:
+            self.register_frame.pack(fill="x", padx=4, pady=4)
+
+    def _attach_digit_limiter(self, entry: ttk.Entry, max_len: int):
+        def validate(text_after):
+            return len(text_after) <= max_len and re.fullmatch(r"\d*", text_after) is not None
+        vcmd = (self.register(validate), "%P")
+        entry.configure(validate="key", validatecommand=vcmd)
+
+    def _mark_invalid(self, entry_widget):
+        try:
+            entry_widget.configure(style="Invalid.TEntry")
+        except tk.TclError:
+            pass
+        entry_widget.configure(foreground="#a00")
+
+    def _clear_field_style(self, entries):
+        for e in entries:
+            try:
+                e.configure(style="TEntry")
+            except tk.TclError:
+                pass
+            e.configure(foreground="#000")
+
+if __name__ == "__main__":
+    app = App()
+    # Estilo para campo inválido (fallback simples)
+    try:
+        style = ttk.Style()
+        style.configure("Invalid.TEntry", fieldbackground="#ffe6e6")
+    except Exception:
+        pass
+    app.mainloop()
