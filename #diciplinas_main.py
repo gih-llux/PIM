@@ -3,18 +3,13 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import json, os, re
 
-# ==============================
 # CONFIGURAÇÕES
-# ==============================
 PROFESSOR_DOMAINS = ["prof.unip.br", "docente.unip.br"]
 USERS_FILE = "professores.json"
 
-
-# ==============================
-# FUNÇÕES UTILITÁRIAS
-# ==============================
+# Validação para o professor ter acesso a sua área
 def is_valid_password(pw: str) -> bool:
-    return bool(re.fullmatch(r"\d{5}", pw))  # exatamente 5 dígitos
+    return bool(re.fullmatch(r"\d{5}", pw))  # senha de 5 digitos
 
 
 def is_valid_prof_email(email: str) -> bool:
@@ -39,9 +34,7 @@ def save_users(users: dict) -> None:
         json.dump(users, f, ensure_ascii=False, indent=2)
 
 
-# ==============================
-# JANELAS DE FUNÇÕES
-# ==============================
+# Tela de funções
 class CadastroWindow(tk.Toplevel):
     def __init__(self, user):
         super().__init__()
@@ -195,9 +188,7 @@ class CronogramaWindow(tk.Toplevel):
         ttk.Button(self, text="Salvar", command=salvar).pack(pady=10)
 
 
-# ==============================
-# MENU PRINCIPAL
-# ==============================
+# Menu principal
 class SistemaProfessor(tk.Toplevel):
     def __init__(self, user_info):
         super().__init__()
@@ -218,9 +209,7 @@ class SistemaProfessor(tk.Toplevel):
         tk.Button(self, text="Sair", command=self.destroy, **btn_style).pack(pady=25)
 
 
-# ==============================
-# LOGIN E CADASTRO
-# ==============================
+#Tela de login e cadastro
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -318,8 +307,7 @@ class App(tk.Tk):
         ttk.Button(frame, text="Cadastrar", command=registrar).pack(pady=10)
 
 
-# ==============================
 # EXECUÇÃO
-# ==============================
 if __name__ == "__main__":
     App().mainloop()
+
