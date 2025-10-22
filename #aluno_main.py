@@ -1,4 +1,4 @@
-# aluno_main.py — versão com layout Tkinter padrão
+# aluno_main.py 
 import re
 import json
 import os
@@ -10,7 +10,7 @@ INSTITUTION_DOMAIN = "unip.br"
 USERS_FILE = "usuarios.json"
 
 
-# ---------------------- Validação ----------------------
+# Validação com senha, email e RA
 def is_valid_password(pw: str) -> bool:
     return bool(re.fullmatch(r"\d{5}", pw))
 
@@ -31,7 +31,7 @@ def is_valid_birthdate(date_str: str) -> bool:
         return False
 
 
-# ---------------------- JSON ----------------------
+#Bilioteca JSON
 def load_users() -> dict:
     if not os.path.exists(USERS_FILE):
         return {}
@@ -48,7 +48,7 @@ def save_users(users: dict) -> None:
         json.dump(users, f, ensure_ascii=False, indent=2)
 
 
-# ---------------------- Entry com Placeholder ----------------------
+# 
 class PlaceholderEntry(ttk.Entry):
     def __init__(self, master=None, placeholder="", **kwargs):
         super().__init__(master, **kwargs)
@@ -80,7 +80,7 @@ class PlaceholderEntry(ttk.Entry):
         return "" if (self._has_placeholder or val == self.placeholder) else val
 
 
-# ---------------------- APP ----------------------
+# Tela 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -90,7 +90,7 @@ class App(tk.Tk):
 
         self.users = load_users()
 
-        # ---------- Estilos ----------
+        #Layout
         style = ttk.Style(self)
         style.theme_use("clam")
 
@@ -129,7 +129,7 @@ class App(tk.Tk):
         )
         style.configure("Invalid.TEntry", fieldbackground="#2140A3")
 
-        # ---------- Estrutura visual ----------
+        #Estrutura visual
         container = tk.Frame(self, bg="#2140A3")
         container.pack(fill="both", expand=True, pady=30)
 
@@ -140,7 +140,7 @@ class App(tk.Tk):
         self.register_frame = self._build_register_frame(container)
         self.register_frame.pack(fill="both", expand=True, padx=30, pady=10)
 
-    # ---------- CADASTRO ----------
+    #Cadastro do aluno
     def _build_register_frame(self, parent):
         frame = tk.Frame(parent, bg="#2140A3")
 
@@ -159,14 +159,14 @@ class App(tk.Tk):
 
         return frame
 
-    # ---------- Layout simplificado ----------
+    #Layout simplificado
     def _placeholder_row(self, parent, placeholder, entry):
         row = tk.Frame(parent, bg="#C5E1DC")
         ph = PlaceholderEntry(row, placeholder=placeholder)
         ph.pack(fill="x", ipady=6)
         return row
 
-    # ---------- Validação e Salvamento ----------
+    #Validação do cadastro e salvamento de dados em JSON
     def _handle_register(self):
         nome = self.reg_nome.get().strip()
         ra = self.reg_ra.get().strip()
@@ -210,3 +210,4 @@ class App(tk.Tk):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+
