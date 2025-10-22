@@ -5,12 +5,12 @@ import os
 import tkinter as tk
 from tkinter import messagebox
 
-# ---------------- Configurações ----------------
+#  Configurações
 PROFESSOR_DOMAINS = ["prof.unip.br", "docente.unip.br"]
 USERS_FILE = "professores.json"
 
 
-# ---------------- Validações ----------------
+# Validação de senha e email
 def is_valid_password(pw: str) -> bool:
     return bool(re.fullmatch(r"\d{5}", pw))  # exatamente 5 dígitos
 
@@ -21,7 +21,7 @@ def is_valid_prof_email(email: str) -> bool:
     return bool(re.fullmatch(pattern, email))
 
 
-# ---------------- JSON ----------------
+# biblioteca JSON
 def load_users() -> dict:
     if not os.path.exists(USERS_FILE):
         return {}
@@ -38,7 +38,7 @@ def save_users(users: dict) -> None:
         json.dump(users, f, ensure_ascii=False, indent=2)
 
 
-# ---------------- App / telas ----------------
+#Criação de telas
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -70,7 +70,7 @@ class App(tk.Tk):
         self.active_frame.pack(expand=True, fill="both")
 
 
-# ---------- Frame de Login ----------
+#Frame de login
 class LoginFrame(tk.Frame):
     def __init__(self, master, users, on_go_register):
         super().__init__(master, bg=master["bg"])
@@ -124,7 +124,7 @@ class LoginFrame(tk.Frame):
         e = tk.Entry(self, font=("Arial", 12), width=28, relief="flat", bd=4)
         e.insert(0, placeholder)
         if is_password:
-            # show nothing until focus sets mask
+          
             e.config(show="")
         e._placeholder = placeholder
         e._is_password = is_password
@@ -183,7 +183,7 @@ class LoginFrame(tk.Frame):
             "Bem-vindo(a)!", f"Login concluído, Prof(a). {user.get('nome', 'Docente')} — Disciplina: {user.get('disciplina', '')}")
 
 
-# ---------- Frame de Cadastro ----------
+#Frame de Cadastro 
 class RegisterFrame(tk.Frame):
     def __init__(self, master, users, on_done):
         super().__init__(master, bg=master["bg"])
@@ -317,3 +317,4 @@ class RegisterFrame(tk.Frame):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+
