@@ -11,12 +11,13 @@ USERS_FILE = "professores.json"
 
 
 # Validação de senha e email
+  # senha com 5 dígitos
 def is_valid_password(pw: str) -> bool:
-    return bool(re.fullmatch(r"\d{5}", pw))  # exatamente 5 dígitos
+    return bool(re.fullmatch(r"\d{5}", pw))
 
-
+#email com @prof.unip.br
 def is_valid_prof_email(email: str) -> bool:
-    domains = "|".join(re.escape(d) for d in PROFESSOR_DOMAINS)
+    domains = "|".join(re.escape(d) for d in PROFESSOR_DOMAINS) 
     pattern = rf"^[A-Za-z0-9._%+-]+@(?:{domains})$"
     return bool(re.fullmatch(pattern, email))
 
@@ -317,4 +318,5 @@ class RegisterFrame(tk.Frame):
 if __name__ == "__main__":
     app = App()
     app.mainloop()
+
 
