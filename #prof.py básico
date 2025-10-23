@@ -34,7 +34,7 @@ def save_users(users: dict) -> None:
     with open(USERS_FILE, "w", encoding="utf-8") as f:
         json.dump(users, f, ensure_ascii=False, indent=2)
 
-#  UI 
+# Inteface do usuario
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -47,7 +47,7 @@ class App(tk.Tk):
         container = ttk.Frame(self, padding=16)
         container.pack(fill="both", expand=True)
 
-        # Pergunta “Possui login?”
+        # Possui login ou não?
         self.has_login = tk.StringVar(value="sim")
         mode_box = ttk.LabelFrame(container, text="Tela de Professor")
         mode_box.pack(fill="x", pady=(0, 12))
@@ -231,3 +231,4 @@ if __name__ == "__main__":
     except Exception:
         pass
     app.mainloop()
+
