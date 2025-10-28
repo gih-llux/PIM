@@ -1,5 +1,4 @@
 # interface inicial
-# portal_unip_completo.py
 import re
 import json
 import os
@@ -7,7 +6,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from datetime import datetime
 
-# ---------------- Configurações / Arquivos ----------------
+# Configurações
 ALUNOS_FILE = "alunos.json"
 PROFESSORES_FILE = "professores.json"
 DISCIPLINAS_FILE = "disciplinas.json"
@@ -18,9 +17,7 @@ REVISOES_FILE = "revisoes.json"
 ALUNO_DOMAIN = "unip.br"
 PROFESSOR_DOMAINS = ["prof.unip.br", "docente.unip.br"]
 
-# ---------------- Validações ----------------
-
-
+#Validação
 def is_valid_password(pw: str) -> bool:
     return bool(re.fullmatch(r"\d{5}", pw))
 
@@ -46,9 +43,7 @@ def is_valid_birthdate(date_str: str) -> bool:
     except ValueError:
         return False
 
-# ---------------- JSON helpers ----------------
-
-
+#JSON
 def load_json(filename):
     if not os.path.exists(filename):
         return {}
@@ -64,7 +59,7 @@ def save_json(filename, data):
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
-# ---------------- Aplicativo Principal ----------------
+#Area Principal
 
 
 class PortalApp(tk.Tk):
@@ -87,7 +82,7 @@ class PortalApp(tk.Tk):
             self.active_frame.destroy()
             self.active_frame = None
 
-    # Home / navegação
+    # Home
     def show_home(self):
         self._clear()
         self.active_frame = HomeFrame(self)
@@ -145,7 +140,7 @@ class PortalApp(tk.Tk):
                                             on_logout=self.show_home)
         self.active_frame.pack(expand=True, fill="both")
 
-# ---------------- Tela Inicial ----------------
+#Tela Inicial
 
 
 class HomeFrame(tk.Frame):
@@ -165,9 +160,7 @@ class HomeFrame(tk.Frame):
                   bg="#0984E3", fg="white", font=("Arial", 13, "bold"),
                   relief="flat", width=22, height=2).pack(pady=6)
 
-# ---------------- Login / Cadastro Aluno ----------------
-
-
+# Login/ Cadastro Aluno
 class LoginAlunoFrame(tk.Frame):
     def __init__(self, master, users, on_login_success, on_register, on_back):
         super().__init__(master, bg=master["bg"])
@@ -679,3 +672,4 @@ class PortalProfFrame(tk.Frame):
 if __name__ == "__main__":
     app = PortalApp()
     app.mainloop()
+
